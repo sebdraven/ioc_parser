@@ -3,9 +3,10 @@ import sys
 import csv
 import json
 
-OUTPUT_FORMATS = ('csv', 'json', 'yara', 'netflow', )
+OUTPUT_FORMATS = ('csv', 'json', 'yara', 'netflow',)
 
-def getHandler(output_format):
+
+def getHandler(output_format, output_handle):
     output_format = output_format.lower()
     if output_format not in OUTPUT_FORMATS:
         print("[WARNING] Invalid output format specified.. using CSV")
@@ -14,9 +15,16 @@ def getHandler(output_format):
     handler_format = "OutputHandler_" + output_format
     handler_class = getattr(sys.modules[__name__], handler_format)
 
-    return handler_class()
+    return handler_class(output_handle)
+
 
 class OutputHandler(object):
+    def __init__(self, output_handle):
+        if output_handle == sys.stdout:
+            self.output = sys.stdout
+        else:
+            self.output = open(output_handle, 'w')
+
     def print_match(self, fpath, page, name, match):
         pass
 
@@ -29,9 +37,10 @@ class OutputHandler(object):
     def print_error(self, fpath, exception):
         print("[ERROR] %s" % (exception))
 
+
 class OutputHandler_csv(OutputHandler):
     def __init__(self):
-        self.csv_writer = csv.writer(sys.stdout, delimiter = '\t')
+        self.csv_writer = csv.writer(sys.stdout, delimiter='\t')
 
     def print_match(self, fpath, page, name, match):
         self.csv_writer.writerow((fpath, page, name, match))
@@ -39,13 +48,14 @@ class OutputHandler_csv(OutputHandler):
     def print_error(self, fpath, exception):
         self.csv_writer.writerow((fpath, '0', 'error', exception))
 
+
 class OutputHandler_json(OutputHandler):
     def print_match(self, fpath, page, name, match):
         data = {
-            'path' : fpath,
-            'file' : os.path.basename(fpath),
-            'page' : page,
-            'type' : name,
+            'path': fpath,
+            'file': os.path.basename(fpath),
+            'page': page,
+            'type': name,
             'match': match
         }
 
@@ -53,24 +63,27 @@ class OutputHandler_json(OutputHandler):
 
     def print_error(self, fpath, exception):
         data = {
-            'path'      : fpath,
-            'file'      : os.path.basename(fpath),
-            'type'      : 'error',
-            'exception' : exception
+            'path': fpath,
+            'file': os.path.basename(fpath),
+            'type': 'error',
+            'exception': exception
         }
+        print(data)
+        self.output.write(json.dumps(data))
 
-        print(json.dumps(data))
 
 class OutputHandler_yara(OutputHandler):
+
     def __init__(self):
-        self.rule_enc = ''.join(chr(c) if chr(c).isupper() or chr(c).islower() or chr(c).isdigit() else '_' for c in range(256))
+        self.rule_enc = ''.join(
+            chr(c) if chr(c).isupper() or chr(c).islower() or chr(c).isdigit() else '_' for c in range(256))
 
     def print_match(self, fpath, page, name, match):
         if name in self.cnt:
             self.cnt[name] += 1
         else:
             self.cnt[name] = 1
-        
+
         string_id = "$%s%d" % (name, self.cnt[name])
         self.sids.append(string_id)
         string_value = match.replace('\\', '\\\\')
@@ -92,15 +105,16 @@ class OutputHandler_yara(OutputHandler):
         print("\tcondition:")
         print("\t\t" + cond)
         print("}")
-        
+
+
 class OutputHandler_netflow(OutputHandler):
     def __init__(self):
-        print "host 255.255.255.255"
+        print("host 255.255.255.255")
 
     def print_match(self, fpath, page, name, match):
         data = {
-            'type' : name,
+            'type': name,
             'match': match
         }
         if data["type"] == "IP":
-            print " or host %s " % data["match"]
+            print(" or host %s " % data["match"])

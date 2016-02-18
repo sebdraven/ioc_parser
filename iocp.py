@@ -40,7 +40,7 @@ import sys
 import fnmatch
 import argparse
 import re
-from StringIO import StringIO
+from io import BytesIO
 try:
     import configparser as ConfigParser
 except ImportError:
@@ -81,7 +81,7 @@ class IOC_Parser(object):
     patterns = {}
     defang = {}
 
-    def __init__(self, patterns_ini=None, input_format='pdf', dedup=False, library='pdfminer', output_format='csv', output_handler=None):
+    def __init__(self, patterns_ini=None, input_format='pdf', dedup=False, library='pdfminer', output_format='csv', output_handler=None, output_handle=sys.stdout):
         basedir = os.path.dirname(os.path.abspath(__file__))
         if patterns_ini is None:
             patterns_ini = os.path.join(basedir, 'patterns.ini')
@@ -92,7 +92,7 @@ class IOC_Parser(object):
         if output_handler:
             self.handler = output_handler
         else:
-            self.handler = output.getHandler(output_format)
+            self.handler = output.getHandler(output_format, output_handle)
 
         self.ext_filter = "*." + input_format
         parser_format = "parse_" + input_format
@@ -168,7 +168,7 @@ class IOC_Parser(object):
 
     def parse_pdf_pypdf2(self, f, fpath):
         try:
-            pdf = PdfFileReader(f, strict = False)
+            pdf = PdfFileReader(f, strict=False)
 
             if self.dedup:
                 self.dedup_store = set()
@@ -253,10 +253,10 @@ class IOC_Parser(object):
             for elem in html:
                 if elem.parent.name in ['style', 'script', '[document]', 'head', 'title']:
                     continue
-                elif re.match('<!--.*-->', unicode(elem)):
+                elif re.match('<!--.*-->', elem):
                     continue
                 else:
-                    text += unicode(elem)
+                    text += elem
 
             self.handler.print_header(fpath)
             self.parse_page(fpath, text, 1)
@@ -275,7 +275,7 @@ class IOC_Parser(object):
                 headers = { 'User-Agent': 'Mozilla/5.0 Gecko Firefox' }
                 r = requests.get(path, headers=headers)
                 r.raise_for_status()
-                f = StringIO(r.content)
+                f = BytesIO(r.content)
                 self.parser_func(f, path)
                 return
             elif os.path.isfile(path):
