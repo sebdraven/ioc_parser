@@ -25,15 +25,16 @@ file_name = b'([A-Za-z0-9-_\.]+\.(exe|dll|bat|sys|htm|html|js|jar|jpg|png|vb|scr
 
 file_path = b'[A-Z]:\\[A-Za-z0-9-_\.\\]+'
 
-patterns=[{'type': 'URL', 'regex': re.compile(url, re.M),'defang': url_defang},
-          {'type': 'Host', 'regex': re.compile(host, re.M),'defang': host_defang},
-          {'type': 'IP', 'regex': re.compile(ip, re.M)},
-          {'type': 'Email', 'regex': re.compile(email, re.M)},
-          {'type': 'MD5', 'regex': re.compile(md5, re.M)},
-          {'type': 'SHA1', 'regex': re.compile(sha1, re.M)},
-          {'type': 'SHA256', 'regex': re.compile(sha256, re.M)},
-          {'type': 'CVE','regex': re.compile(cve, re.M)},
-          {'type': 'Filename','regex': re.compile(file_name,re.M)},
-          {'type': 'Filepath','regex': re.compile(file_path,re.M)}
+patterns = [
+            {'type': 'URL', 'regex': re.compile(url, re.M),'defang': url_defang},
+            {'type': 'Host', 'regex': re.compile(host, re.M),'defang': host_defang},
+            {'type': 'IP', 'regex': re.compile(ip, re.M)},
+            {'type': 'Email', 'regex': re.compile(email, re.M)},
+            {'type': 'MD5', 'regex': re.compile(md5, re.M)},
+            {'type': 'SHA1', 'regex': re.compile(sha1, re.M)},
+            {'type': 'SHA256', 'regex': re.compile(sha256, re.M)},
+            {'type': 'CVE','regex': re.compile(cve, re.M)},
+            {'type': 'Filename','regex': re.compile(file_name,re.M)},
+            {'type': 'Filepath','regex': re.compile(file_path,re.M)}
           ]
 

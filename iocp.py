@@ -40,7 +40,7 @@ import sys
 import fnmatch
 import argparse
 import re
-from io import BytesIO
+from io import BytesIO,StringIO
 from patterns import patterns
 try:
     import configparser as ConfigParser
@@ -55,7 +55,7 @@ try:
 except ImportError:
     pass
 try:
-    from pdfminer.pdfpage import PDFPage
+    from pdfminer.pdfparser import PDFDocument,PDFParser
     from pdfminer.pdfinterp import PDFResourceManager
     from pdfminer.converter import TextConverter
     from pdfminer.pdfinterp import PDFPageInterpreter
@@ -179,7 +179,12 @@ class IOC_Parser(object):
 
             self.handler.print_header(fpath)
             page_num = 0
-            for page in PDFPage.get_pages(f, pagenos, check_extractable=True):
+            parser= PDFParser(f)
+            doc = PDFDocument()
+
+            parser.set_document(doc)
+            doc.set_parser(parser)
+            for page in doc.get_pages():
                 page_num += 1
 
                 retstr = StringIO()
@@ -189,7 +194,7 @@ class IOC_Parser(object):
                 data = retstr.getvalue()
                 retstr.close()
 
-                self.parse_page(fpath, data, page_num)
+                self.parse_page(fpath, bytes(data,'UTF-8'), page_num)
             self.handler.print_footer(fpath)
         except (KeyboardInterrupt, SystemExit):
             raise
