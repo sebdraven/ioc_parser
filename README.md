@@ -12,6 +12,7 @@ Now it's compatible python 3.
 * *-path path* URL,path of file
 
 you can pipe with CasperJS like that:
+
 **casperjs ioc_casper.js <url> | iocp.py [-p INI] [-i FORMAT] [-o FORMAT] [-d] [-l LIB]**
 ## Requirements
 One of the following PDF parsing libraries:
