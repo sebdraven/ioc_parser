@@ -56,10 +56,10 @@ class OutputHandler_json(OutputHandler):
             'file': os.path.basename(fpath),
             'page': page,
             'type': name,
-            'match': match
+            'match': match.decode('utf-8')
         }
 
-        print(json.dumps(data))
+        self.output.write(json.dumps(data) + '\n')
 
     def print_error(self, fpath, exception):
         data = {

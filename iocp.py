@@ -41,6 +41,7 @@ import fnmatch
 import argparse
 import re
 from io import BytesIO
+from patterns import patterns
 try:
     import configparser as ConfigParser
 except ImportError:
@@ -81,12 +82,10 @@ class IOC_Parser(object):
     patterns = {}
     defang = {}
 
-    def __init__(self, patterns_ini=None, input_format='pdf', dedup=False, library='pdfminer', output_format='csv', output_handler=None, output_handle=sys.stdout):
+    def __init__(self, output_handle,patterns_ini=None, input_format='pdf', dedup=False, library='pdfminer', output_format='csv', output_handler=None):
         basedir = os.path.dirname(os.path.abspath(__file__))
-        if patterns_ini is None:
-            patterns_ini = os.path.join(basedir, 'patterns.ini')
 
-        self.load_patterns(patterns_ini)
+        self.load_patterns()
         self.whitelist = WhiteList(basedir)
         self.dedup = dedup
         if output_handler:
@@ -112,28 +111,8 @@ class IOC_Parser(object):
                 e = 'HTML parser library not found: BeautifulSoup'
                 raise ImportError(e)
 
-    def load_patterns(self, fpath):
-        config = ConfigParser.ConfigParser()
-        with open(fpath) as f:
-            config.readfp(f)
-
-        for ind_type in config.sections():
-            try:
-                ind_pattern = config.get(ind_type, 'pattern')
-            except:
-                continue
-
-            if ind_pattern:
-                ind_regex = re.compile(ind_pattern)
-                self.patterns[ind_type] = ind_regex
-
-            try:
-                ind_defang = config.get(ind_type, 'defang')
-            except:
-                continue
-
-            if ind_defang:
-                self.defang[ind_type] = True
+    def load_patterns(self):
+        self.patterns = patterns
 
     def is_whitelisted(self, ind_match, ind_type):
         try:
@@ -145,26 +124,27 @@ class IOC_Parser(object):
         return False
 
     def parse_page(self, fpath, data, page_num):
-        for ind_type, ind_regex in self.patterns.items():
-            matches = ind_regex.findall(data)
+        for entry in self.patterns:
+
+            matches = entry['regex'].findall(data)
 
             for ind_match in matches:
                 if isinstance(ind_match, tuple):
                     ind_match = ind_match[0]
 
-                if self.is_whitelisted(ind_match, ind_type):
+                if self.is_whitelisted(ind_match, entry['type']):
                     continue
 
-                if ind_type in self.defang:
-                    ind_match = re.sub(r'\[\.\]', '.', ind_match)
+                if 'defang' in entry and entry['defang']:
+                    ind_match = re.sub(b'\[\.\]', '.', ind_match)
 
                 if self.dedup:
-                    if (ind_type, ind_match) in self.dedup_store:
+                    if (entry['type'], ind_match) in self.dedup_store:
                         continue
 
-                    self.dedup_store.add((ind_type, ind_match))
+                    self.dedup_store.add((entry['type'], ind_match))
 
-                self.handler.print_match(fpath, page_num, ind_type, ind_match)
+                self.handler.print_match(fpath, page_num, entry['type'], ind_match)
 
     def parse_pdf_pypdf2(self, f, fpath):
         try:
@@ -249,14 +229,14 @@ class IOC_Parser(object):
             soup = BeautifulSoup(data)
             html = soup.findAll(text=True)
 
-            text = u''
+            text = b''
             for elem in html:
                 if elem.parent.name in ['style', 'script', '[document]', 'head', 'title']:
                     continue
-                elif re.match('<!--.*-->', elem):
+                elif re.match(b'<!--.*-->', bytes(elem, 'utf-8')):
                     continue
                 else:
-                    text += elem
+                    text += bytes(elem, 'utf-8') + b'\n'
 
             self.handler.print_header(fpath)
             self.parse_page(fpath, text, 1)
@@ -303,9 +283,10 @@ if __name__ == "__main__":
     argparser.add_argument('-p', dest='INI', default=None, help='Pattern file')
     argparser.add_argument('-i', dest='INPUT_FORMAT', default='pdf', help='Input format (pdf/txt/html)')
     argparser.add_argument('-o', dest='OUTPUT_FORMAT', default='csv', help='Output format (csv/json/yara/netflow)')
+    argparser.add_argument('-O', dest='OUTPUT_HANDLE',default=sys.stdout,help='Specify a path file to export results')
     argparser.add_argument('-d', dest='DEDUP', action='store_true', default=False, help='Deduplicate matches')
     argparser.add_argument('-l', dest='LIB', default='pdfminer', help='PDF parsing library (pypdf2/pdfminer)')
     args = argparser.parse_args()
 
-    parser = IOC_Parser(args.INI, args.INPUT_FORMAT, args.DEDUP, args.LIB, args.OUTPUT_FORMAT)
+    parser = IOC_Parser(args.OUTPUT_HANDLE, args.INI, args.INPUT_FORMAT, args.DEDUP, args.LIB, args.OUTPUT_FORMAT)
     parser.parse(args.PATH)
