@@ -136,7 +136,7 @@ class IOC_Parser(object):
                     continue
 
                 if 'defang' in entry and entry['defang']:
-                    ind_match = re.sub(b'\[\.\]', '.', ind_match)
+                    ind_match = re.sub(b'\[\.\]', b'.', ind_match)
 
                 if self.dedup:
                     if (entry['type'], ind_match) in self.dedup_store:
@@ -253,7 +253,14 @@ class IOC_Parser(object):
 
     def parse(self, path):
         try:
-            if path.startswith('http://') or path.startswith('https://'):
+            if path == sys.stdin:
+                data = ''
+                lines = sys.stdin.readlines()
+                path = lines[0]
+                data = ''.join(l for l in lines[1:])
+                self.parser_func(BytesIO(bytes(data, 'UTF-8')),path)
+                return
+            elif path.startswith('http://') or path.startswith('https://'):
                 if 'requests' not in IMPORTS:
                     e = 'HTTP library not found: requests'
                     raise ImportError(e)
@@ -284,7 +291,7 @@ class IOC_Parser(object):
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
-    argparser.add_argument('PATH', action='store', help='File/directory/URL to report(s)')
+    argparser.add_argument('-path', default=sys.stdin,help='File/directory/URL to report(s)', dest='path')
     argparser.add_argument('-p', dest='INI', default=None, help='Pattern file')
     argparser.add_argument('-i', dest='INPUT_FORMAT', default='pdf', help='Input format (pdf/txt/html)')
     argparser.add_argument('-o', dest='OUTPUT_FORMAT', default='csv', help='Output format (csv/json/yara/netflow)')
@@ -294,4 +301,4 @@ if __name__ == "__main__":
     args = argparser.parse_args()
 
     parser = IOC_Parser(args.OUTPUT_HANDLE, args.INI, args.INPUT_FORMAT, args.DEDUP, args.LIB, args.OUTPUT_FORMAT)
-    parser.parse(args.PATH)
+    parser.parse(args.path)
