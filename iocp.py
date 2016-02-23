@@ -56,7 +56,7 @@ except ImportError:
     pass
 try:
     from pdfminer.pdfparser import PDFDocument,PDFParser
-    from pdfminer.pdfinterp import PDFResourceManager
+    from pdfminer.pdfinterp import PDFResourceManager,process_pdf
     from pdfminer.converter import TextConverter
     from pdfminer.pdfinterp import PDFPageInterpreter
     from pdfminer.layout import LAParams
@@ -160,7 +160,7 @@ class IOC_Parser(object):
 
                 data = page.extractText()
 
-                self.parse_page(fpath, data, page_num)
+                self.parse_page(fpath, bytes(data,'utf-8'), page_num)
             self.handler.print_footer(fpath)
         except (KeyboardInterrupt, SystemExit):
             raise
@@ -180,21 +180,19 @@ class IOC_Parser(object):
             self.handler.print_header(fpath)
             page_num = 0
             parser= PDFParser(f)
-            doc = PDFDocument()
+            doc = PDFDocument(caching=True)
 
             parser.set_document(doc)
             doc.set_parser(parser)
             for page in doc.get_pages():
-                page_num += 1
-
                 retstr = StringIO()
                 device = TextConverter(rsrcmgr, retstr, laparams=laparams)
                 interpreter = PDFPageInterpreter(rsrcmgr, device)
+                page_num += 1
                 interpreter.process_page(page)
                 data = retstr.getvalue()
-                retstr.close()
-
                 self.parse_page(fpath, bytes(data,'UTF-8'), page_num)
+                retstr.close()
             self.handler.print_footer(fpath)
         except (KeyboardInterrupt, SystemExit):
             raise
@@ -297,7 +295,7 @@ if __name__ == "__main__":
     argparser.add_argument('-o', dest='OUTPUT_FORMAT', default='csv', help='Output format (csv/json/yara/netflow)')
     argparser.add_argument('-O', dest='OUTPUT_HANDLE',default=sys.stdout,help='Specify a path file to export results')
     argparser.add_argument('-d', dest='DEDUP', action='store_true', default=False, help='Deduplicate matches')
-    argparser.add_argument('-l', dest='LIB', default='pdfminer', help='PDF parsing library (pypdf2/pdfminer)')
+    argparser.add_argument('-l', dest='LIB', default='pypdf2', help='PDF parsing library (pypdf2/pdfminer)')
     args = argparser.parse_args()
 
     parser = IOC_Parser(args.OUTPUT_HANDLE, args.INI, args.INPUT_FORMAT, args.DEDUP, args.LIB, args.OUTPUT_FORMAT)

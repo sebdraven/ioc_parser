@@ -21,7 +21,7 @@ cve = b'(CVE\-[0-9]{4}\-[0-9]{4,6})'
 
 registry = b'((HKLM|HKCU)\\[\\A-Za-z0-9-_]+)'
 
-file_name = b'([A-Za-z0-9-_\.]+\.(exe|dll|bat|sys|htm|html|js|jar|jpg|png|vb|scr|pif|chm|zip|rar|cab|pdf|doc|docx|ppt|pptx|xls|xlsx|swf|gif))'
+file_name = b'([A-Za-z0-9-_\.]+\.(exe|dll|bat|class|sys|htm|html|jsp|js|jar|jpg|png|vb|scr|pif|chm|zip|rar|cab|pdf|doc|docx|ppt|pptx|xls|xlsx|xml|swf|gif))'
 
 file_path = b'[A-Z]:\\[A-Za-z0-9-_\.\\]+'
 
