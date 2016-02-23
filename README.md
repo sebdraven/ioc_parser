@@ -3,7 +3,6 @@ IOC Parser is a tool to extract indicators of compromise from security reports i
 Now it's compatible python 3.
 ## Usage
 **iocp.py [-h] [-p INI] [-i FORMAT] [-o FORMAT] [-O path] [-d] [-l LIB] -path path**
-* *FILE* File/directory path to report(s)
 * *-p INI* Pattern file
 * *-i FORMAT* Input format (pdf/txt/html)
 * *-o FORMAT* Output format (csv/json/yara)
