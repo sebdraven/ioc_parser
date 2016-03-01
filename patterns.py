@@ -7,7 +7,7 @@ host =b'(([a-z0-9\-]{2,}\[?\.\]?)+(abogado|ac|academy|accountants|active|actor|a
 
 host_defang = True
 
-ip = b'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
+ip = b'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d{1,5})?)'
 
 email = b'([a-z][_a-z0-9-.]+@[a-z0-9-]+\.[a-z]+)'
 
@@ -34,7 +34,7 @@ patterns = [
             {'type': 'SHA1', 'regex': re.compile(sha1, re.M)},
             {'type': 'SHA256', 'regex': re.compile(sha256, re.M)},
             {'type': 'CVE','regex': re.compile(cve, re.M)},
-            {'type': 'Filename','regex': re.compile(file_name,re.M)},
-            {'type': 'Filepath','regex': re.compile(file_path,re.M)}
+            {'type': 'Filename','regex': re.compile(file_name, re.M)},
+            {'type': 'Filepath','regex': re.compile(file_path, re.M)}
           ]
 
