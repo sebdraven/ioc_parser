@@ -42,22 +42,22 @@ class OutputHandler_csv(OutputHandler):
     def __init__(self):
         self.csv_writer = csv.writer(sys.stdout, delimiter='\t')
 
-    def print_match(self, fpath, page, name, match):
-        self.csv_writer.writerow((fpath, page, name, match))
+    def print_match(self, fpath, page, name, match,white_list=False):
+        self.csv_writer.writerow((fpath, page, name, match, white_list))
 
     def print_error(self, fpath, exception):
         self.csv_writer.writerow((fpath, '0', 'error', exception))
 
 
 class OutputHandler_json(OutputHandler):
-    def print_match(self, fpath, page, name, match, warning_list=False):
+    def print_match(self, fpath, page, name, match, white_list=False):
         data = {
             'path': fpath.rstrip('\r\n'),
             'file': os.path.basename(fpath).rstrip('\r\n'),
             'page': page,
             'type': name,
             'match': match.decode('utf-8'),
-            'warning_list': warning_list
+            'white_list': white_list
         }
 
         self.output.write(json.dumps(data) + '\n')
@@ -79,7 +79,7 @@ class OutputHandler_yara(OutputHandler):
         self.rule_enc = ''.join(
             chr(c) if chr(c).isupper() or chr(c).islower() or chr(c).isdigit() else '_' for c in range(256))
 
-    def print_match(self, fpath, page, name, match):
+    def print_match(self, fpath, page, name, match, white_list=False):
         if name in self.cnt:
             self.cnt[name] += 1
         else:
@@ -112,10 +112,11 @@ class OutputHandler_netflow(OutputHandler):
     def __init__(self):
         print("host 255.255.255.255")
 
-    def print_match(self, fpath, page, name, match):
-        data = {
-            'type': name,
-            'match': match
-        }
-        if data["type"] == "IP":
-            print(" or host %s " % data["match"])
+    def print_match(self, fpath, page, name, match, white_list=False):
+        if not white_list:
+            data = {
+                'type': name,
+                'match': match
+            }
+            if data["type"] == "IP":
+                print(" or host %s " % data["match"])
