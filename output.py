@@ -50,13 +50,14 @@ class OutputHandler_csv(OutputHandler):
 
 
 class OutputHandler_json(OutputHandler):
-    def print_match(self, fpath, page, name, match):
+    def print_match(self, fpath, page, name, match, warning_list=False):
         data = {
             'path': fpath.rstrip('\r\n'),
             'file': os.path.basename(fpath).rstrip('\r\n'),
             'page': page,
             'type': name,
-            'match': match.decode('utf-8')
+            'match': match.decode('utf-8'),
+            'warning_list': warning_list
         }
 
         self.output.write(json.dumps(data) + '\n')

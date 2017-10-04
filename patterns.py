@@ -21,7 +21,7 @@ cve = b'(CVE\-[0-9]{4}\-[0-9]{4,6})'
 
 registry = b'((HKLM|HKCU)\\[\\A-Za-z0-9-_]+)'
 
-file_name = b'([A-Za-z0-9-_\.]+\.(exe|dll|bat|class|sys|htm|html|jsp|js|jar|jpg|png|vb|scr|pif|chm|zip|rar|cab|pdf|doc|docx|ppt|pptx|xls|xlsx|xml|swf|gif))'
+file_name = b'([A-Za-z0-9-_\.]+\.(7z|exe|dll|bat|class|sys|htm|html|jsp|js|jar|jpg|png|vb|vbs|scr|pif|chm|zip|rar|cab|pdf|doc|docx|ppt|pptx|xls|xlsx|xml|swf|gif))'
 
 file_path = b'[A-Z]:\\[A-Za-z0-9-_\.\\]+'
 
@@ -33,8 +33,8 @@ patterns = [
             {'type': 'MD5', 'regex': re.compile(md5, re.M)},
             {'type': 'SHA1', 'regex': re.compile(sha1, re.M)},
             {'type': 'SHA256', 'regex': re.compile(sha256, re.M)},
-            {'type': 'CVE','regex': re.compile(cve, re.M)},
-            {'type': 'Filename','regex': re.compile(file_name, re.M)},
-            {'type': 'Filepath','regex': re.compile(file_path, re.M)}
+            {'type': 'CVE', 'regex': re.compile(cve, re.M)},
+            {'type': 'Filename', 'regex': re.compile(file_name, re.M)},
+            {'type': 'Filepath', 'regex': re.compile(file_path, re.M)}
           ]
 

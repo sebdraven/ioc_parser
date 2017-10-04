@@ -125,7 +125,7 @@ class IOC_Parser(object):
 
     def parse_page(self, fpath, data, page_num):
         for entry in self.patterns:
-
+            warning_list = False
             matches = entry['regex'].findall(data)
 
             for ind_match in matches:
@@ -133,7 +133,7 @@ class IOC_Parser(object):
                     ind_match = ind_match[0]
 
                 if self.is_whitelisted(ind_match, entry['type']):
-                    continue
+                    warning_list = True
 
                 if 'defang' in entry and entry['defang']:
                     ind_match = re.sub(b'\[\.\]', b'.', ind_match)
@@ -144,7 +144,7 @@ class IOC_Parser(object):
 
                     self.dedup_store.add((entry['type'], ind_match))
 
-                self.handler.print_match(fpath, page_num, entry['type'], ind_match)
+                self.handler.print_match(fpath, page_num, entry['type'], ind_match, warning_list = warning_list)
 
     def parse_pdf_pypdf2(self, f, fpath):
         try:
