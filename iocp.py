@@ -129,6 +129,7 @@ class IOC_Parser(object):
             matches = entry['regex'].findall(data)
 
             for ind_match in matches:
+                white_list = False
                 if isinstance(ind_match, tuple):
                     ind_match = ind_match[0]
 
