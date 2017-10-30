@@ -39,10 +39,12 @@ class OutputHandler(object):
 
 
 class OutputHandler_csv(OutputHandler):
-    def __init__(self):
+    def __init__(self, output_handle):
         self.csv_writer = csv.writer(sys.stdout, delimiter='\t')
 
     def print_match(self, fpath, page, name, match,white_list=False):
+        if type(match) == bytes:
+            match = match.decode()
         self.csv_writer.writerow((fpath, page, name, match, white_list))
 
     def print_error(self, fpath, exception):
