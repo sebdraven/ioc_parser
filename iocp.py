@@ -126,7 +126,7 @@ class IOC_Parser(object):
     def parse_page(self, fpath, data, page_num):
         for entry in self.patterns:
             white_list = False
-            matches = entry['regex'].findall(data)
+            matches = entry['regex'].findall(data.replace(b'\n', b''))
 
             for ind_match in matches:
                 white_list = False
